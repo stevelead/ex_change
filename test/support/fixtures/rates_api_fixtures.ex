@@ -3,7 +3,7 @@ defmodule Support.Fixtures.RatesApiFixtures do
   alias ExChange.Wallets
 
   @default_rate_params [%{code: "NZD/USD", rate: "0.55"}]
-  @currency_count_params [%{ticker: "NZD", count: 5}]
+  @currency_count_params [%{currency: "NZD", count: 5}]
 
   def rates_fixture(params \\ @default_rate_params) do
     Enum.reduce(params, %{}, fn item, acc ->

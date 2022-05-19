@@ -48,7 +48,7 @@ defmodule ExChange.RatesServerTest do
   describe "RatesServer calls the exchange rate api" do
     test "a call is made at the tick rate", %{test: test} do
       currency_count =
-        wallet_currency_count_fixture([%{ticker: "NZD", count: 5}, %{ticker: "USD", count: 5}])
+        wallet_currency_count_fixture([%{currency: "NZD", count: 5}, %{currency: "USD", count: 5}])
 
       initial_state = %{
         currency_count: currency_count,

@@ -9,7 +9,7 @@ defmodule ExChange.Wallets do
   end
 
   def add_currency(wallet, currency_count) do
-    Map.update(currency_count, wallet.ticker, 0, &(&1 + 1))
+    Map.update(currency_count, wallet.currency, 0, &(&1 + 1))
   end
 
   def get_exchange_combinations(currency_count) do
