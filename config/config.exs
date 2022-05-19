@@ -25,6 +25,11 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Configures Ecto Shorts https://hexdocs.pm/ecto_shorts/EctoShorts.html
+config :ecto_shorts,
+  repo: ExChange.Repo,
+  error_module: EctoShorts.Actions.Error
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

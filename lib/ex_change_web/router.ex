@@ -5,7 +5,17 @@ defmodule ExChangeWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/api", ExChangeWeb do
+  scope "/" do
     pipe_through :api
+
+    forward "/api", Absinthe.Plug, schema: ExChangeWeb.Schema
+  end
+
+  if Mix.env() == :dev do
+    forward "/graphiql",
+            Absinthe.Plug.GraphiQL,
+            schema: ExChangeWeb.Schema,
+            interface: :playground,
+            socket: ExChangeWeb.UserSocket
   end
 end

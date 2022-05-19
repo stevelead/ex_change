@@ -41,7 +41,13 @@ defmodule ExChange.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:stream_data, "~> 0.5", only: [:dev, :test]}
+      {:stream_data, "~> 0.5", only: [:dev, :test]},
+      {:absinthe, "~> 1.7.0"},
+      {:absinthe_plug, "~> 1.5"},
+      {:absinthe_phoenix, "~> 2.0"},
+      {:dataloader, "~> 1.0"},
+      {:decimal, "~> 2.0"},
+      {:ecto_shorts, "~> 1.1.5"}
     ]
   end
 

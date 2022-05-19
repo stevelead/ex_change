@@ -5,6 +5,7 @@ defmodule ExChange.Accounts do
 
   import Ecto.Query, warn: false
   alias ExChange.Repo
+  alias EctoShorts.Actions
 
   alias ExChange.Accounts.User
 
@@ -20,6 +21,17 @@ defmodule ExChange.Accounts do
   def list_users do
     Repo.all(User)
   end
+
+  @doc """
+  Gets a single user.
+
+  ## Examples
+
+      iex> get_user(%{id: 123})
+      {:ok, %User{}}
+
+  """
+  def get_user(params), do: Actions.find(User, params)
 
   @doc """
   Gets a single user.
