@@ -2,10 +2,13 @@ defmodule ExChange.Wallets.Wallet do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias ExChange.Accounts.User
+
   schema "wallets" do
     field :currency, :string
     field :value, :decimal
-    field :user, :id
+
+    belongs_to :user, User
 
     timestamps()
   end
