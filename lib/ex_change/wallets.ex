@@ -52,6 +52,22 @@ defmodule ExChange.Wallets do
   def get_wallet!(id), do: Repo.get!(Wallet, id)
 
   @doc """
+  Finds a single wallet.
+
+  Returns %{code: :not_found, ...} if the Wallet does not exist.
+
+  ## Examples
+
+      iex> find_wallet(%{user_id: 123, currency: "NZD"})
+      %Wallet{}
+
+      iex> find_wallet(%{user_id: 123, currency: "HUH"})
+      {:error, %{code: :not_found, details: %{params: %{user_id: 123, currency: "HUH"}, query: Wallet}, message: "no records found"}}
+
+  """
+  def find_wallet(params), do: Actions.find(Wallet, params)
+
+  @doc """
   Creates a wallet.
 
   ## Examples

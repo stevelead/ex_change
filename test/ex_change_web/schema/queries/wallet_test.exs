@@ -52,6 +52,38 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
     end
   end
 
+  @wallet_by_currency """
+    query Wallets($user_id: ID!, $currency: String!) {
+    wallet_by_currency(user_id: $user_id, currency: $currency) {
+      id
+      currency
+      value
+      user {
+        id
+        email
+      }
+    }
+  }
+  """
+
+  describe "@wallets_by_currency" do
+    test "fetches wallet by user_id and currency" do
+      currency = "NZD"
+      assert user = user_fixture()
+      assert wallet = wallet_fixture(%{user_id: user.id, currency: currency})
+
+      assert {:ok, %{data: data}} =
+               Absinthe.run(@wallet_by_currency, Schema,
+                 variables: %{"user_id" => user.id, "currency" => currency}
+               )
+
+      assert wallet_resp = data["wallet_by_currency"]
+      assert wallet.id == wallet_resp["id"]
+      assert currency == wallet_resp["currency"]
+      assert user.id == get_in(wallet_resp, ["user", "id"])
+    end
+  end
+
   def get_first_user_id(resp) do
     resp |> List.first() |> get_in(["user", "id"])
   end
