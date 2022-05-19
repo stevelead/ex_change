@@ -62,10 +62,12 @@ defmodule ExChange.RatesTest do
 
   describe "Rates calls the exchange rate api" do
     test "a call is made at the tick rate", %{test: test} do
-      wallet_currency_count = [
-        wallet_currency_count_fixture(%{ticker: "NZD", count: 5}),
-        wallet_currency_count_fixture(%{ticker: "USD", count: 5})
-      ]
+      wallet_currency_count =
+        [
+          wallet_currency_count_fixture(%{ticker: "NZD", count: 5}),
+          wallet_currency_count_fixture(%{ticker: "USD", count: 5})
+        ]
+        |> convert_to_map()
 
       initial_state = %{
         wallet_currency_count: wallet_currency_count,
@@ -93,7 +95,14 @@ defmodule ExChange.RatesTest do
   end
 
   defp get_float_rate(rates, code) do
-    get_rate(rates, code)
+    rates
+    |> get_rate(code)
     |> Decimal.to_float()
+  end
+
+  defp convert_to_map(list) do
+    Enum.reduce(list, %{}, fn item, acc ->
+      Map.put(acc, item.ticker, item.count)
+    end)
   end
 end

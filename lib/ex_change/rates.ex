@@ -72,7 +72,7 @@ defmodule ExChange.Rates do
   end
 
   def get_combinations(state) do
-    held_currencies = Enum.map(state.wallet_currency_count, & &1.ticker)
+    held_currencies = Map.keys(state.wallet_currency_count)
 
     for from <- held_currencies, to <- held_currencies, from !== to do
       {from, to}
