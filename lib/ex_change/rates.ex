@@ -16,10 +16,14 @@ defmodule ExChange.Rates do
     state = Map.merge(%Rates{}, initial_state)
 
     name = Keyword.get(opts, :name, @default_name)
-    GenServer.start_link(__MODULE__, state, name: via_name(name))
+    GenServer.start_link(__MODULE__, state, name: via_tuple(name))
   end
 
-  def via_name(name) when is_atom(name) or is_binary(name) do
+  def state(server \\ @default_name) do
+    GenServer.call(via_tuple(server), :state)
+  end
+
+  def via_tuple(name) when is_atom(name) or is_binary(name) do
     {:via, Registry, {ExChange.Registry, name}}
   end
 
@@ -28,5 +32,10 @@ defmodule ExChange.Rates do
   @impl true
   def init(state) do
     {:ok, state}
+  end
+
+  @impl true
+  def handle_call(:state, _from, state) do
+    {:reply, state, state}
   end
 end

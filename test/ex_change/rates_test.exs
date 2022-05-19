@@ -13,10 +13,14 @@ defmodule ExChange.RatesTest do
     end
 
     test "accepts initial state on start", %{test: test} do
+      rates_api_module = RatesApiMock
       rates = [Rate.new("NZD/USD", 0.55)]
-      initial_state = %{rates: rates, wallet_tickers: [], rates_api_module: RatesApiMock}
+      initial_state = %{rates: rates, wallet_tickers: [], rates_api_module: rates_api_module}
 
       assert {:ok, _pid} = Rates.start_link(name: test, initial_state: initial_state)
+      assert state = Rates.state(test)
+      assert state.rates == rates
+      assert state.rates_api_module == rates_api_module
     end
   end
 
