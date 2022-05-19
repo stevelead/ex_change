@@ -11,7 +11,7 @@ defmodule ExChange.RatesServer.Superviser do
       if Mix.env() == :test do
         []
       else
-        [ExChange.Rates]
+        [ExChange.RatesServer]
       end
 
     Supervisor.init(children, strategy: :one_for_one)
