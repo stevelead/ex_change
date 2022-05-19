@@ -56,9 +56,9 @@ defmodule ExChange.Rates do
   end
 
   def fetch_exchange_rates(state) do
-    all_codes = get_combinations(state)
-
-    Task.async_stream(all_codes, fn {from, to} ->
+    state
+    |> get_combinations()
+    |> Task.async_stream(fn {from, to} ->
       state.rates_api_module.fetch(from, to)
     end)
     |> Enum.reduce([], fn

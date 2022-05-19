@@ -1,10 +1,10 @@
-defmodule ExChange.Rates.WalletCurrencyCount do
+defmodule ExChange.Rates.CurrencyCount do
   defstruct ticker: nil, count: 0
 
-  alias ExChange.Rates.WalletCurrencyCount
+  alias ExChange.Rates.CurrencyCount
 
   def new(ticker, count \\ 0) do
-    %WalletCurrencyCount{ticker: ticker, count: count}
+    %CurrencyCount{ticker: ticker, count: count}
   end
 
   def add_currency(new_item, collection) do
