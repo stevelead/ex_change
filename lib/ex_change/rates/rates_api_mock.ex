@@ -2,10 +2,14 @@ defmodule ExChange.Rates.RatesApiMock do
   @behaviour ExChange.Rates.RatesApiBehaviour
   require Logger
 
-  def fetch(from, to) do
-    Logger.info("@rates_api_module fetch/2 called with params [#{from}, #{to}]")
+  alias ExChange.Rates.Rate
 
-    response =
+  def fetch(from, to) do
+    fetch_time = DateTime.utc_now()
+
+    code = "#{from}:#{to}"
+
+    rate =
       case {from, to} do
         {"NZD", "USD"} ->
           "0.65"
@@ -14,8 +18,7 @@ defmodule ExChange.Rates.RatesApiMock do
           generate_float_as_string()
       end
 
-    Logger.info("Response value #{response}")
-    response
+    Rate.new(code, rate, fetch_time)
   end
 
   def generate_float_as_string() do

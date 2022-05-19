@@ -16,6 +16,6 @@ defmodule ExChange.Rates.Rate do
   end
 
   defp now() do
-    DateTime.now!("Etc/UTC")
+    DateTime.utc_now()
   end
 end

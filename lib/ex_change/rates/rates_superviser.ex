@@ -7,9 +7,12 @@ defmodule ExChange.Rates.RatesSuperviser do
 
   @impl true
   def init(_init_arg) do
-    children = [
-      ExChange.Rates
-    ]
+    children =
+      if Mix.env() == :test do
+        []
+      else
+        [ExChange.Rates]
+      end
 
     Supervisor.init(children, strategy: :one_for_one)
   end

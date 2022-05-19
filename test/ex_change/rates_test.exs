@@ -1,7 +1,8 @@
 defmodule ExChange.RatesTest do
   use ExUnit.Case
-  require Decimal
+  import ExUnit.CaptureLog
   import Support.Fixtures.RatesFixtures
+  require Decimal
 
   alias ExChange.Rates
   alias ExChange.Rates.RatesApiMock
@@ -15,7 +16,8 @@ defmodule ExChange.RatesTest do
 
     test "accepts initial state on start", %{test: test} do
       rates = [rate_fixture()]
-      initial_state = %{rates: rates}
+      wallet_currency_count = [wallet_currency_count_fixture()]
+      initial_state = %{rates: rates, wallet_currency_count: wallet_currency_count}
 
       assert {:ok, _pid} = Rates.start_link(name: test, initial_state: initial_state)
 
@@ -58,17 +60,40 @@ defmodule ExChange.RatesTest do
     end
   end
 
-  describe "Rates.Rate.new/3" do
-    test "accepts a rate as binary and returns a Decimal" do
-      assert %{rate: rate} = rate_fixture()
+  describe "Rates calls the exchange rate api" do
+    test "a call is made at the tick rate", %{test: test} do
+      wallet_currency_count = [
+        wallet_currency_count_fixture(%{ticker: "NZD", count: 5}),
+        wallet_currency_count_fixture(%{ticker: "USD", count: 5})
+      ]
 
-      assert Decimal.is_decimal(rate)
+      initial_state = %{
+        wallet_currency_count: wallet_currency_count,
+        rates_api_module: RatesApiMock,
+        tick_rate: 10
+      }
+
+      opts = [
+        name: test,
+        initial_state: initial_state
+      ]
+
+      assert {:ok, _pid} = Rates.start_link(opts)
+
+      Process.sleep(15)
+
+      assert state = Rates.state(test)
+      assert 0.65 = get_float_rate(state.rates, "NZD:USD")
+      assert state.rates |> get_rate("USD:NZD") |> Decimal.is_decimal()
     end
+  end
 
-    test "accepts a rate as float and returns a Decimal" do
-      assert %{rate: rate} = rate_fixture()
+  defp get_rate(rates, code) do
+    rates |> Map.get(code) |> Map.get(:rate)
+  end
 
-      assert Decimal.is_decimal(rate)
-    end
+  defp get_float_rate(rates, code) do
+    get_rate(rates, code)
+    |> Decimal.to_float()
   end
 end
