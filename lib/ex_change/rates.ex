@@ -4,18 +4,22 @@ defmodule ExChange.Rates do
   alias ExChange.Rates
   alias ExChange.Rates.RatesApi
 
-  defstruct rates: [], wallet_currency_count: [], rates_api: RatesApi
-
   @default_name ExChange.Rates
+  @default_tick_rate :timer.seconds(1)
+
+  defstruct rates: [],
+            wallet_currency_count: [],
+            rates_api: RatesApi,
+            tick_rate: @default_tick_rate
 
   # API
 
   def start_link(opts \\ []) do
     initial_state = Keyword.get(opts, :initial_state, %{})
-
     state = Map.merge(%Rates{}, initial_state)
 
     name = Keyword.get(opts, :name, @default_name)
+
     GenServer.start_link(__MODULE__, state, name: via_tuple(name))
   end
 
