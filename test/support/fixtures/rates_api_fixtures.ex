@@ -1,4 +1,4 @@
-defmodule Support.Fixtures.RatesApiFixtures do
+defmodule ExChange.RatesApiFixtures do
   alias ExChange.RatesApi.Rate
   alias ExChange.Wallets
 

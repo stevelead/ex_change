@@ -11,7 +11,7 @@ defmodule ExChange.WalletsFixtures do
     {:ok, wallet} =
       attrs
       |> Enum.into(%{
-        currency: "some currency",
+        currency: "NZD",
         value: "120.5"
       })
       |> ExChange.Wallets.create_wallet()

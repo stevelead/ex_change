@@ -3,7 +3,7 @@ defmodule ExChange.Repo.Migrations.CreateUsers do
 
   def change do
     create table(:users) do
-      add :email, :string
+      add :email, :string, null: false
 
       timestamps()
     end

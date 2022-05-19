@@ -1,6 +1,6 @@
 defmodule ExChange.RatesServerTest do
   use ExUnit.Case
-  import Support.Fixtures.RatesApiFixtures
+  import ExChange.RatesApiFixtures
   require Decimal
 
   alias ExChange.RatesServer
