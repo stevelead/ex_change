@@ -7,12 +7,25 @@ defmodule ExChange.WalletsTest do
     alias ExChange.Wallets.Wallet
 
     import ExChange.WalletsFixtures
+    import ExChange.AccountsFixtures
 
     @invalid_attrs %{currency: nil, value: nil}
 
     test "list_wallets/0 returns all wallets" do
       wallet = wallet_fixture()
       assert Wallets.list_wallets() == [wallet]
+    end
+
+    test "list_wallets_by_user_id/1 returns all users wallets" do
+      user = user_fixture()
+      wallet1 = wallet_fixture(user_id: user.id, currency: "USD")
+      wallet2 = wallet_fixture(user_id: user.id, currency: "NZD")
+
+      assert wallets_resp = Wallets.list_wallets_by_user_id(user.id)
+
+      assert wallet_ids = wallets_resp |> Enum.map(& &1.id)
+      assert Enum.any?(wallet_ids, &(&1 === wallet1.id))
+      assert Enum.any?(wallet_ids, &(&1 === wallet2.id))
     end
 
     test "get_wallet!/1 returns the wallet with given id" do

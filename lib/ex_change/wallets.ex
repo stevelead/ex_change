@@ -5,6 +5,7 @@ defmodule ExChange.Wallets do
 
   import Ecto.Query, warn: false
   alias ExChange.Repo
+  alias EctoShorts.Actions
 
   alias ExChange.Wallets.Wallet
 
@@ -19,6 +20,19 @@ defmodule ExChange.Wallets do
   """
   def list_wallets do
     Repo.all(Wallet)
+  end
+
+  @doc """
+  Returns the list of wallets.
+
+  ## Examples
+
+      iex> list_wallets_by_user_id(1)
+      [%Wallet{}, ...]
+
+  """
+  def list_wallets_by_user_id(user_id) do
+    Actions.all(Wallet, user_id: user_id)
   end
 
   @doc """

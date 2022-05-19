@@ -5,7 +5,7 @@ defmodule ExChangeWeb.Schema.Queries.User do
   object :user_queries do
     @desc "A user by id"
     field :user, :user do
-      arg(:id, non_null(:id))
+      arg :id, non_null(:id)
 
       resolve(&Resolvers.User.get_user/3)
     end

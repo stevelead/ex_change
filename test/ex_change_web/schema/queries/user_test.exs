@@ -26,7 +26,7 @@ defmodule ExChangeWeb.Schema.Queries.UserTest do
 
       assert {:ok, %{data: data}} = Absinthe.run(@user, Schema, variables: %{"id" => user.id})
 
-      user_resp = data["user"]
+      assert user_resp = data["user"]
       assert wallet.id == user_resp["wallets"] |> List.first() |> Map.get("id")
     end
 
@@ -37,7 +37,7 @@ defmodule ExChangeWeb.Schema.Queries.UserTest do
 
       assert {:ok, %{data: data}} = Absinthe.run(@user, Schema, variables: %{"id" => user.id})
 
-      user_resp = data["user"]
+      assert user_resp = data["user"]
       assert wallet_ids = user_resp["wallets"] |> Enum.map(& &1["id"])
       assert Enum.any?(wallet_ids, &(&1 === wallet1.id))
       assert Enum.any?(wallet_ids, &(&1 === wallet2.id))
