@@ -1,4 +1,4 @@
-defmodule ExChange.Rates.RatesSuperviser do
+defmodule ExChange.RatesServer.Superviser do
   use Supervisor
 
   def start_link(init_arg) do

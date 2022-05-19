@@ -18,7 +18,7 @@ defmodule ExChange.Application do
       ExChangeWeb.Endpoint,
       # Start a worker by calling: ExChange.Worker.start_link(arg)
       {Registry, keys: :unique, name: ExChange.Registry},
-      ExChange.Rates.RatesSuperviser
+      ExChange.RatesServer.Superviser
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -1,10 +1,10 @@
-defmodule ExChange.Rates.RatesApiMock do
-  @behaviour ExChange.Rates.RatesApiBehaviour
+defmodule ExChange.RatesApi.Mock do
+  @behaviour ExChange.RatesApi.Behaviour
   require Logger
 
-  alias ExChange.Rates.Rate
+  alias ExChange.RatesApi.Rate
 
-  def fetch(from, to) do
+  def fetch_rates(from, to) do
     fetch_time = DateTime.utc_now()
 
     code = "#{from}:#{to}"
