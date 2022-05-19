@@ -5,6 +5,7 @@ defmodule ExChange.RatesTest do
   require Decimal
 
   alias ExChange.Rates
+  alias ExChange.Rates.Rate
   alias ExChange.Rates.RatesApiMock
 
   describe "Rates.start_link/1" do
@@ -16,7 +17,7 @@ defmodule ExChange.RatesTest do
 
     test "accepts initial state on start", %{test: test} do
       rates = [rate_fixture()]
-      wallet_currency_count = [wallet_currency_count_fixture()]
+      wallet_currency_count = wallet_currency_count_fixture()
       initial_state = %{rates: rates, wallet_currency_count: wallet_currency_count}
 
       assert {:ok, _pid} = Rates.start_link(name: test, initial_state: initial_state)
@@ -48,13 +49,13 @@ defmodule ExChange.RatesTest do
 
   describe "Rates.Rate.new/3" do
     test "accepts a rate as binary and returns a Decimal" do
-      assert %{rate: rate} = rate_fixture()
+      assert %{rate: rate} = Rate.new("NZD:USD", "0.65")
 
       assert Decimal.is_decimal(rate)
     end
 
     test "accepts a rate as float and returns a Decimal" do
-      assert %{rate: rate} = rate_fixture()
+      assert %{rate: rate} = Rate.new("NZD:USD", 0.65)
 
       assert Decimal.is_decimal(rate)
     end
@@ -63,11 +64,7 @@ defmodule ExChange.RatesTest do
   describe "Rates calls the exchange rate api" do
     test "a call is made at the tick rate", %{test: test} do
       wallet_currency_count =
-        [
-          wallet_currency_count_fixture(%{ticker: "NZD", count: 5}),
-          wallet_currency_count_fixture(%{ticker: "USD", count: 5})
-        ]
-        |> convert_to_map()
+        wallet_currency_count_fixture([%{ticker: "NZD", count: 5}, %{ticker: "USD", count: 5}])
 
       initial_state = %{
         wallet_currency_count: wallet_currency_count,
