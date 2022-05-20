@@ -6,11 +6,17 @@ defmodule ExChangeWeb.Schema do
   import_types Absinthe.Type.Custom
 
   import_types ExChangeWeb.Schema.Queries.User
+  import_types ExChangeWeb.Schema.Mutations.User
+
   import_types ExChangeWeb.Schema.Queries.Wallet
 
   query do
-    import_fields(:user_queries)
-    import_fields(:wallet_queries)
+    import_fields :user_queries
+    import_fields :wallet_queries
+  end
+
+  mutation do
+    import_fields :user_mutations
   end
 
   def context(ctx) do

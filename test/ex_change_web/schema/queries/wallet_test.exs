@@ -53,8 +53,8 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
   end
 
   @wallet_by_currency """
-    query Wallets($user_id: ID!, $currency: String!) {
-    wallet_by_currency(user_id: $user_id, currency: $currency) {
+    query WalletsByCurrency($user_id: ID!, $currency: String!) {
+    walletByCurrency(user_id: $user_id, currency: $currency) {
       id
       currency
       value
@@ -66,7 +66,7 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
   }
   """
 
-  describe "@wallets_by_currency" do
+  describe "@walletByCurrency" do
     test "fetches wallet by user_id and currency" do
       currency = "NZD"
       assert user = user_fixture()
@@ -77,7 +77,7 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
                  variables: %{"user_id" => user.id, "currency" => currency}
                )
 
-      assert wallet_resp = data["wallet_by_currency"]
+      assert wallet_resp = data["walletByCurrency"]
       assert wallet.id == wallet_resp["id"]
       assert currency == wallet_resp["currency"]
       assert user.id == get_in(wallet_resp, ["user", "id"])
