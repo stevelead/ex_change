@@ -35,6 +35,10 @@ defmodule ExChange.RatesServer do
     GenServer.call(via_tuple(server), {:add_currency, new_wallet})
   end
 
+  def get_exchange_rate(rate_code, server \\ @default_name) do
+    GenServer.call(via_tuple(server), {:get_exchange_rate, rate_code})
+  end
+
   def via_tuple(name) when is_atom(name) or is_binary(name) do
     {:via, Registry, {ExChange.Registry, name}}
   end
@@ -57,6 +61,12 @@ defmodule ExChange.RatesServer do
   def handle_call({:add_currency, new_wallet}, _from, state) do
     new_currency_count = Wallets.add_currency(new_wallet, state.currency_count)
     {:reply, :ok, %{state | currency_count: new_currency_count}}
+  end
+
+  @impl true
+  def handle_call({:get_exchange_rate, rate_code}, _from, state) do
+    response = state |> Map.get(:rates) |> Map.get(rate_code) |> Map.get(:rate)
+    {:reply, response, state}
   end
 
   @impl true

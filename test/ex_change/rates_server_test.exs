@@ -71,8 +71,32 @@ defmodule ExChange.RatesServerTest do
     end
   end
 
-  describe "RatesServer calls the exchange rate api" do
-    test "a call is made at the tick rate", %{test: test} do
+  describe "RatesServer.get_exchange_rate/2" do
+    test "returns the current value from state", %{test: test} do
+      currency_count =
+        wallet_currency_count_fixture([%{currency: "NZD", count: 5}, %{currency: "USD", count: 5}])
+
+      initial_state = %{
+        currency_count: currency_count,
+        rates_api_module: RatesApi.Mock
+      }
+
+      opts = [
+        name: test,
+        initial_state: initial_state
+      ]
+
+      assert {:ok, pid} = RatesServer.start_link(opts)
+
+      Process.send(pid, :tick, [])
+
+      assert decimal = RatesServer.get_exchange_rate("NZD:USD", test)
+      assert "0.65" = Decimal.to_string(decimal)
+    end
+  end
+
+  describe "RatesServer" do
+    test "calls the exchange rate api at the tick rate", %{test: test} do
       currency_count =
         wallet_currency_count_fixture([%{currency: "NZD", count: 5}, %{currency: "USD", count: 5}])
 
