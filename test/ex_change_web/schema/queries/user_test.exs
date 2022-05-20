@@ -2,7 +2,6 @@ defmodule ExChangeWeb.Schema.Queries.UserTest do
   use ExChange.DataCase
 
   alias ExChangeWeb.Schema
-  alias ExChange.RatesServer
 
   import ExChange.AccountsFixtures
   import ExChange.WalletsFixtures

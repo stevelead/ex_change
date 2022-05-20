@@ -17,5 +17,13 @@ defmodule ExChangeWeb.Schema.Queries.Wallet do
 
       resolve(&Resolvers.Wallet.find_wallet/3)
     end
+
+    @desc "A user's total value of all wallets"
+    field :total_worth, :total_worth do
+      arg :user_id, non_null(:id)
+      arg :currency, non_null(:string)
+
+      resolve(&Resolvers.Wallet.get_users_total_worth/3)
+    end
   end
 end

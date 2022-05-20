@@ -1,10 +1,11 @@
 defmodule ExChange.WalletsTest do
-  use ExChange.DataCase, async: true
+  use ExChange.DataCase
 
   alias ExChange.Wallets
 
   describe "wallets" do
     alias ExChange.Wallets.Wallet
+    alias ExChange.RatesServer
 
     import ExChange.WalletsFixtures
     import ExChange.AccountsFixtures
@@ -26,6 +27,27 @@ defmodule ExChange.WalletsTest do
       assert wallet_ids = wallets_resp |> Enum.map(& &1.id)
       assert Enum.any?(wallet_ids, &(&1 === wallet1.id))
       assert Enum.any?(wallet_ids, &(&1 === wallet2.id))
+    end
+
+    test "get_users_total_worth/2 returns user's total worth", %{test: test} do
+      user = user_fixture()
+
+      for currency <- ["NZD", "CAD"] do
+        wallet_fixture(user_id: user.id, currency: currency, value: 1)
+      end
+
+      initial_state = %{
+        rates: %{"NZD:USD" => %{rate: "0.7"}, "CAD:USD" => %{rate: "0.9"}},
+        rates_api_module: RatesApi.Mock
+      }
+
+      assert {:ok, _pid} =
+               start_supervised({RatesServer, [name: test, initial_state: initial_state]})
+
+      assert response = Wallets.get_users_total_worth(Integer.to_string(user.id), "USD", test)
+      assert "1.6" == response.total_worth
+      assert "USD" == response.currency
+      assert user.id == response.user_id
     end
 
     test "get_wallet!/1 returns the wallet with given id" do

@@ -1,5 +1,9 @@
 defmodule ExChangeWeb.Schema.Queries.WalletTest do
-  use ExChange.DataCase, async: true
+  use ExChange.DataCase
+
+  alias ExChange.RatesServer
+  alias ExChange.RatesApi
+  alias ExChange.RatesApi.Rate
 
   import ExChange.AccountsFixtures
   import ExChange.WalletsFixtures
@@ -84,7 +88,49 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
     end
   end
 
-  def get_first_user_id(resp) do
+  @total_worth_doc """
+    query TotalWorth($user_id: ID!, $currency: String!) {
+    totalWorth(user_id: $user_id, currency: $currency) {
+      user_id
+      currency
+      total_worth
+    }
+  }
+  """
+
+  @tag :external
+  describe "Integration test - @totalWorth" do
+    test "fetches the total worth of a user" do
+      assert user = user_fixture()
+
+      wallet_currencies = [{"NZD", 10}, {"USD", 100}, {"CAD", 1000}]
+
+      for {currency, value} <- wallet_currencies do
+        wallet_fixture(%{user_id: user.id, currency: currency, value: value})
+      end
+
+      rates =
+        [{"NZD:USD", "0.65"}, {"CAD:USD", "0.95"}]
+        |> Enum.map(fn {code, rate} -> Rate.new(code, rate) end)
+        |> Enum.reduce(%{}, &RatesServer.Helpers.update_rates/2)
+
+      initial_state = %{rates: rates, rates_api_module: RatesApi}
+
+      assert {:ok, _pid} = start_supervised({RatesServer, [initial_state: initial_state]})
+
+      assert {:ok, %{data: data}} =
+               Absinthe.run(@total_worth_doc, Schema,
+                 variables: %{"user_id" => user.id, "currency" => "USD"}
+               )
+
+      assert total_worth_resp = data["totalWorth"]
+      assert user.id == total_worth_resp["user_id"]
+      assert "USD" == total_worth_resp["currency"]
+      assert "1056.50" == total_worth_resp["total_worth"]
+    end
+  end
+
+  defp get_first_user_id(resp) do
     resp |> List.first() |> get_in(["user", "id"])
   end
 end

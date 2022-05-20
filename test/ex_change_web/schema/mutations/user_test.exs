@@ -1,5 +1,5 @@
 defmodule ExChangeWeb.Schema.Mutations.UserTest do
-  use ExChange.DataCase, async: true
+  use ExChange.DataCase
 
   alias ExChangeWeb.Schema
 

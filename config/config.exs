@@ -30,6 +30,9 @@ config :ecto_shorts,
   repo: ExChange.Repo,
   error_module: EctoShorts.Actions.Error
 
+config :ex_change,
+  alphavantage_api_key: System.get_env("ALPHAVANTAGE_API_KEY")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

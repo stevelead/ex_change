@@ -1,5 +1,5 @@
 defmodule ExChange.AccountsTest do
-  use ExChange.DataCase, async: true
+  use ExChange.DataCase
 
   alias ExChange.Accounts
 

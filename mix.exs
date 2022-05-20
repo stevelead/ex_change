@@ -47,7 +47,8 @@ defmodule ExChange.MixProject do
       {:absinthe_phoenix, "~> 2.0"},
       {:dataloader, "~> 1.0"},
       {:decimal, "~> 2.0"},
-      {:ecto_shorts, "~> 1.1.5"}
+      {:ecto_shorts, "~> 1.1.5"},
+      {:req, github: "wojtekmach/req"}
     ]
   end
 

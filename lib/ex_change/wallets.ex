@@ -8,6 +8,7 @@ defmodule ExChange.Wallets do
   alias EctoShorts.Actions
 
   alias ExChange.Wallets.Wallet
+  alias ExChange.RatesServer
 
   @doc """
   Returns the list of wallets.
@@ -33,6 +34,46 @@ defmodule ExChange.Wallets do
   """
   def list_wallets_by_user_id(user_id) do
     Actions.all(Wallet, user_id: user_id)
+  end
+
+  @doc """
+  Returns the list of wallets.
+
+  ## Examples
+
+      iex> get_users_total_worth(1, "USD")
+      "100"
+
+  """
+  def get_users_total_worth(user_id, currency, server \\ nil) do
+    with wallets when is_list(wallets) <- list_wallets_by_user_id(user_id),
+         total_worth <- get_total_worth_value(wallets, currency, server) do
+      %{user_id: String.to_integer(user_id), currency: currency, total_worth: total_worth}
+    end
+  end
+
+  defp get_total_worth_value(wallets, currency, server) do
+    Enum.reduce(wallets, Decimal.new(0), fn
+      %{currency: ^currency, value: value}, acc ->
+        value
+        |> Decimal.new()
+        |> Decimal.add(acc)
+
+      wallet, acc ->
+        with rate <- get_exchange_rate(wallet, currency, server),
+             wallet_value <- Decimal.new(wallet.value),
+             multiplied_decimal <- Decimal.mult(rate, wallet_value) do
+          multiplied_decimal |> Decimal.add(acc) |> Decimal.to_string()
+        end
+    end)
+  end
+
+  defp get_exchange_rate(wallet, currency, nil) do
+    RatesServer.get_exchange_rate("#{wallet.currency}:#{currency}")
+  end
+
+  defp get_exchange_rate(wallet, currency, server) do
+    RatesServer.get_exchange_rate("#{wallet.currency}:#{currency}", server)
   end
 
   @doc """

@@ -1,5 +1,5 @@
 defmodule ExChange.RatesApiTest do
-  use ExChange.DataCase, async: true
+  use ExChange.DataCase
   require Decimal
 
   alias ExChange.RatesApi.Rate

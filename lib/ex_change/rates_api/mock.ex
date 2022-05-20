@@ -14,8 +14,18 @@ defmodule ExChange.RatesApi.Mock do
         {"NZD", "USD"} ->
           "0.65"
 
+        {"USD", "NZD"} ->
+          Decimal.new(1)
+          |> Decimal.div(Decimal.new("0.65"))
+          |> Decimal.to_string()
+
         {"CAD", "USD"} ->
-          "0.95"
+          "0.75"
+
+        {"USD", "CAD"} ->
+          Decimal.new(1)
+          |> Decimal.div(Decimal.new("0.75"))
+          |> Decimal.to_string()
 
         _ ->
           generate_float_as_string()

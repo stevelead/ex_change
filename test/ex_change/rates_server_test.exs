@@ -19,7 +19,12 @@ defmodule ExChange.RatesServerTest do
     test "accepts initial state on start", %{test: test} do
       rates = [rates_fixture()]
       currency_count = wallet_currency_count_fixture()
-      initial_state = %{rates: rates, currency_count: currency_count}
+
+      initial_state = %{
+        rates: rates,
+        currency_count: currency_count,
+        rates_api_module: RatesApi.Mock
+      }
 
       assert {:ok, _pid} =
                start_supervised({RatesServer, [name: test, initial_state: initial_state]})
@@ -28,20 +33,19 @@ defmodule ExChange.RatesServerTest do
       assert state.rates == rates
     end
 
-    test "accepts rates api module on start", %{test: test} do
-      rates_api_module = RatesApi.Mock
-      initial_state = %{rates_api_module: rates_api_module}
+    test "accepts api module on start", %{test: test} do
+      initial_state = %{rates_api_module: RatesApi.Mock}
 
       assert {:ok, _pid} =
                start_supervised({RatesServer, [name: test, initial_state: initial_state]})
 
       assert state = RatesServer.get_state(test)
-      assert state.rates_api_module == rates_api_module
+      assert state.rates_api_module == initial_state.rates_api_module
     end
 
-    test "accepts rates an initial tick rate on start", %{test: test} do
+    test "accepts an initial tick rate on start", %{test: test} do
       tick_rate = 100
-      initial_state = %{tick_rate: tick_rate}
+      initial_state = %{tick_rate: tick_rate, rates_api_module: RatesApi.Mock}
 
       assert {:ok, _pid} =
                start_supervised({RatesServer, [name: test, initial_state: initial_state]})
@@ -147,7 +151,7 @@ defmodule ExChange.RatesServerTest do
       initial_state = %{
         currency_count: currency_count,
         rates_api_module: RatesApi.Mock,
-        tick_rate: 10
+        tick_rate: 100
       }
 
       opts = [
@@ -157,7 +161,7 @@ defmodule ExChange.RatesServerTest do
 
       assert {:ok, _pid} = start_supervised({RatesServer, opts})
 
-      Process.sleep(15)
+      Process.sleep(150)
 
       assert state = RatesServer.get_state(test)
       assert 0.65 = get_float_rate(state.rates, "NZD:USD")
