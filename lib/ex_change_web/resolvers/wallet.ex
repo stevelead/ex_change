@@ -10,6 +10,8 @@ defmodule ExChangeWeb.Resolvers.Wallet do
   end
 
   def create_wallet(_parent, params, _resolution) do
-    Wallets.create_wallet(params)
+    with {:ok, wallet} <- Wallets.create_wallet(params) do
+      {:ok, wallet}
+    end
   end
 end

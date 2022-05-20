@@ -1,10 +1,12 @@
 defmodule ExChange.RatesServerTest do
-  use ExUnit.Case
+  use ExChange.DataCase, async: true
+
   import ExChange.RatesApiFixtures
   require Decimal
 
   alias ExChange.RatesServer
   alias ExChange.RatesApi
+  import ExChange.WalletsFixtures
 
   describe "RatesServer.start_link/1" do
     test "accepts a name on start and creates entry in Registry", %{test: test} do
@@ -42,6 +44,30 @@ defmodule ExChange.RatesServerTest do
 
       assert state = RatesServer.get_state(test)
       assert state.tick_rate == tick_rate
+    end
+  end
+
+  describe "RatesServer.add_currency/2" do
+    test "adds a currency to the state currency count", %{test: test} do
+      currency_count =
+        wallet_currency_count_fixture([%{currency: "NZD", count: 5}, %{currency: "USD", count: 5}])
+
+      initial_state = %{
+        currency_count: currency_count,
+        rates_api_module: RatesApi.Mock
+      }
+
+      opts = [
+        name: test,
+        initial_state: initial_state
+      ]
+
+      assert {:ok, _pid} = RatesServer.start_link(opts)
+      assert wallet = wallet_fixture(currency: "CAD")
+
+      :ok = RatesServer.add_currency(wallet, test)
+      assert state = RatesServer.get_state(test)
+      assert 1 = Map.get(state.currency_count, "CAD")
     end
   end
 

@@ -1,5 +1,5 @@
 defmodule ExChange.WalletsTest do
-  use ExChange.DataCase
+  use ExChange.DataCase, async: true
 
   alias ExChange.Wallets
 
@@ -69,6 +69,39 @@ defmodule ExChange.WalletsTest do
     test "change_wallet/1 returns a wallet changeset" do
       wallet = wallet_fixture()
       assert %Ecto.Changeset{} = Wallets.change_wallet(wallet)
+    end
+
+    test "get_currency_count/1 returns a map with total currency counts" do
+      wallets =
+        for currency <- ["NZD", "NZD", "USD"] do
+          wallet_fixture(%{currency: currency})
+        end
+
+      assert %{"NZD" => 2, "USD" => 1} = Wallets.get_currency_count(wallets)
+    end
+
+    test "add_currency/2 returns a map with total currency counts" do
+      wallets =
+        for currency <- ["NZD", "NZD", "USD"] do
+          wallet_fixture(%{currency: currency})
+        end
+
+      assert initial_currency_count = Wallets.get_currency_count(wallets)
+      assert additional_wallet = wallet_fixture(%{currency: "USD"})
+
+      assert %{"NZD" => 2, "USD" => 2} =
+               Wallets.add_currency(additional_wallet, initial_currency_count)
+    end
+
+    test "get_exchange_combinations/1 returns a list of exchange cobinations" do
+      wallets =
+        for currency <- ["NZD", "NZD", "USD"] do
+          wallet_fixture(%{currency: currency})
+        end
+
+      assert currency_count = Wallets.get_currency_count(wallets)
+
+      assert [{"NZD", "USD"}, {"USD", "NZD"}] = Wallets.get_exchange_combinations(currency_count)
     end
   end
 end
