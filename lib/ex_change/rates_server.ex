@@ -47,9 +47,16 @@ defmodule ExChange.RatesServer do
 
   @impl true
   def init(state) do
-    :timer.send_interval(state.tick_rate, self(), :tick)
+    {:ok, state, {:continue, :load_currencies}}
+  end
 
-    {:ok, state}
+  @impl true
+  def handle_continue(:load_currencies, state) do
+    with wallets when is_list(wallets) <- Wallets.list_wallets(),
+         currency_count <- Wallets.get_currency_count(wallets) do
+      :timer.send_interval(state.tick_rate, self(), :tick)
+      {:noreply, %{state | currency_count: currency_count}}
+    end
   end
 
   @impl true

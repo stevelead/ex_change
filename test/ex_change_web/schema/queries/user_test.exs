@@ -1,11 +1,13 @@
 defmodule ExChangeWeb.Schema.Queries.UserTest do
-  use ExChange.DataCase, async: true
+  use ExChange.DataCase
+
+  alias ExChangeWeb.Schema
+  alias ExChange.RatesServer
 
   import ExChange.AccountsFixtures
   import ExChange.WalletsFixtures
-  alias ExChangeWeb.Schema
 
-  @user """
+  @user_doc """
     query User($id: ID!) {
     user(id: $id) {
       id
@@ -24,7 +26,7 @@ defmodule ExChangeWeb.Schema.Queries.UserTest do
       assert user = user_fixture()
       assert wallet = wallet_fixture(%{user_id: user.id})
 
-      assert {:ok, %{data: data}} = Absinthe.run(@user, Schema, variables: %{"id" => user.id})
+      assert {:ok, %{data: data}} = Absinthe.run(@user_doc, Schema, variables: %{"id" => user.id})
 
       assert user_resp = data["user"]
       assert wallet.id == user_resp["wallets"] |> List.first() |> Map.get("id")
@@ -35,7 +37,7 @@ defmodule ExChangeWeb.Schema.Queries.UserTest do
       assert wallet1 = wallet_fixture(%{user_id: user.id})
       assert wallet2 = wallet_fixture(%{user_id: user.id, currency: "USD"})
 
-      assert {:ok, %{data: data}} = Absinthe.run(@user, Schema, variables: %{"id" => user.id})
+      assert {:ok, %{data: data}} = Absinthe.run(@user_doc, Schema, variables: %{"id" => user.id})
 
       assert user_resp = data["user"]
       assert wallet_ids = user_resp["wallets"] |> Enum.map(& &1["id"])

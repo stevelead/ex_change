@@ -5,7 +5,7 @@ defmodule ExChangeWeb.Schema.Mutations.WalletTest do
   alias ExChange
   import ExChange.AccountsFixtures
 
-  @create_wallet """
+  @create_wallet_doc """
     mutation CreateWallet($user_id: ID!, $currency: String!) {
     createWallet(user_id: $user_id, currency: $currency) {
       id
@@ -33,7 +33,8 @@ defmodule ExChangeWeb.Schema.Mutations.WalletTest do
         "currency" => "NZD"
       }
 
-      assert {:ok, %{data: data}} = Absinthe.run(@create_wallet, Schema, variables: wallet_params)
+      assert {:ok, %{data: data}} =
+               Absinthe.run(@create_wallet_doc, Schema, variables: wallet_params)
 
       wallet_res = data["createWallet"]
       assert wallet_params["currency"] === wallet_res["currency"]

@@ -1,5 +1,5 @@
 defmodule ExChange.RatesServerTest do
-  use ExChange.DataCase, async: true
+  use ExChange.DataCase
 
   import ExChange.RatesApiFixtures
   require Decimal
@@ -7,10 +7,11 @@ defmodule ExChange.RatesServerTest do
   alias ExChange.RatesServer
   alias ExChange.RatesApi
   import ExChange.WalletsFixtures
+  import ExChange.AccountsFixtures
 
   describe "RatesServer.start_link/1" do
     test "accepts a name on start and creates entry in Registry", %{test: test} do
-      assert {:ok, pid} = RatesServer.start_link(name: test)
+      assert {:ok, pid} = start_supervised({RatesServer, [name: test]})
 
       assert [{^pid, _key}] = Registry.lookup(ExChange.Registry, test)
     end
@@ -20,7 +21,8 @@ defmodule ExChange.RatesServerTest do
       currency_count = wallet_currency_count_fixture()
       initial_state = %{rates: rates, currency_count: currency_count}
 
-      assert {:ok, _pid} = RatesServer.start_link(name: test, initial_state: initial_state)
+      assert {:ok, _pid} =
+               start_supervised({RatesServer, [name: test, initial_state: initial_state]})
 
       assert state = RatesServer.get_state(test)
       assert state.rates == rates
@@ -30,7 +32,8 @@ defmodule ExChange.RatesServerTest do
       rates_api_module = RatesApi.Mock
       initial_state = %{rates_api_module: rates_api_module}
 
-      assert {:ok, _pid} = RatesServer.start_link(name: test, initial_state: initial_state)
+      assert {:ok, _pid} =
+               start_supervised({RatesServer, [name: test, initial_state: initial_state]})
 
       assert state = RatesServer.get_state(test)
       assert state.rates_api_module == rates_api_module
@@ -40,10 +43,43 @@ defmodule ExChange.RatesServerTest do
       tick_rate = 100
       initial_state = %{tick_rate: tick_rate}
 
-      assert {:ok, _pid} = RatesServer.start_link(name: test, initial_state: initial_state)
+      assert {:ok, _pid} =
+               start_supervised({RatesServer, [name: test, initial_state: initial_state]})
 
       assert state = RatesServer.get_state(test)
       assert state.tick_rate == tick_rate
+    end
+  end
+
+  describe "RatesServer.init/1" do
+    test "adds the currency count to state", %{test: test} do
+      user = user_fixture()
+
+      for currency <- ["NZD", "CAD"] do
+        wallet_fixture(currency: currency, user_id: user.id)
+      end
+
+      user2 = user_fixture(%{email: "some@other.email"})
+
+      for currency <- ["NZD", "USD"] do
+        wallet_fixture(currency: currency, user_id: user2.id)
+      end
+
+      initial_state = %{
+        rates_api_module: RatesApi.Mock
+      }
+
+      opts = [
+        name: test,
+        initial_state: initial_state
+      ]
+
+      assert {:ok, _pid} = start_supervised({RatesServer, opts})
+
+      assert state = RatesServer.get_state(test)
+      assert 2 = Map.get(state.currency_count, "NZD")
+      assert 1 = Map.get(state.currency_count, "USD")
+      assert 1 = Map.get(state.currency_count, "CAD")
     end
   end
 
@@ -62,7 +98,7 @@ defmodule ExChange.RatesServerTest do
         initial_state: initial_state
       ]
 
-      assert {:ok, _pid} = RatesServer.start_link(opts)
+      assert {:ok, _pid} = start_supervised({RatesServer, opts})
       assert wallet = wallet_fixture(currency: "CAD")
 
       :ok = RatesServer.add_currency(wallet, test)
@@ -73,11 +109,13 @@ defmodule ExChange.RatesServerTest do
 
   describe "RatesServer.get_exchange_rate/2" do
     test "returns the current value from state", %{test: test} do
-      currency_count =
-        wallet_currency_count_fixture([%{currency: "NZD", count: 5}, %{currency: "USD", count: 5}])
+      user = user_fixture()
+
+      for currency <- ["NZD", "USD"] do
+        wallet_fixture(%{currency: currency, user_id: user.id})
+      end
 
       initial_state = %{
-        currency_count: currency_count,
         rates_api_module: RatesApi.Mock
       }
 
@@ -86,7 +124,7 @@ defmodule ExChange.RatesServerTest do
         initial_state: initial_state
       ]
 
-      assert {:ok, pid} = RatesServer.start_link(opts)
+      assert {:ok, pid} = start_supervised({RatesServer, opts})
 
       Process.send(pid, :tick, [])
 
@@ -97,6 +135,12 @@ defmodule ExChange.RatesServerTest do
 
   describe "RatesServer" do
     test "calls the exchange rate api at the tick rate", %{test: test} do
+      user = user_fixture()
+
+      for currency <- ["NZD", "USD"] do
+        wallet_fixture(%{currency: currency, user_id: user.id})
+      end
+
       currency_count =
         wallet_currency_count_fixture([%{currency: "NZD", count: 5}, %{currency: "USD", count: 5}])
 
@@ -111,7 +155,7 @@ defmodule ExChange.RatesServerTest do
         initial_state: initial_state
       ]
 
-      assert {:ok, _pid} = RatesServer.start_link(opts)
+      assert {:ok, _pid} = start_supervised({RatesServer, opts})
 
       Process.sleep(15)
 

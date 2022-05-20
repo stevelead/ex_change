@@ -5,7 +5,7 @@ defmodule ExChangeWeb.Schema.Mutations.UserTest do
 
   alias ExChange
 
-  @create_user """
+  @create_user_doc """
     mutation CreateUser($email: String!) {
     createUser(email: $email) {
       id
@@ -20,7 +20,7 @@ defmodule ExChangeWeb.Schema.Mutations.UserTest do
         "email" => "some@email.com"
       }
 
-      assert {:ok, %{data: data}} = Absinthe.run(@create_user, Schema, variables: user_params)
+      assert {:ok, %{data: data}} = Absinthe.run(@create_user_doc, Schema, variables: user_params)
 
       user_res = data["createUser"]
       assert user_res["email"] === user_params["email"]

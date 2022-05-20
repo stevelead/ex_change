@@ -5,7 +5,7 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
   import ExChange.WalletsFixtures
   alias ExChangeWeb.Schema
 
-  @wallets """
+  @wallets_doc """
     query Wallets($user_id: ID!) {
     wallets(user_id: $user_id) {
       id
@@ -25,7 +25,7 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
       assert wallet = wallet_fixture(%{user_id: user.id})
 
       assert {:ok, %{data: data}} =
-               Absinthe.run(@wallets, Schema, variables: %{"user_id" => user.id})
+               Absinthe.run(@wallets_doc, Schema, variables: %{"user_id" => user.id})
 
       assert wallets_resp = data["wallets"]
       assert wallet.id == wallets_resp |> List.first() |> Map.get("id")
@@ -38,7 +38,7 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
       assert wallet2 = wallet_fixture(%{user_id: user.id, currency: "USD"})
 
       assert {:ok, %{data: data}} =
-               Absinthe.run(@wallets, Schema, variables: %{"user_id" => user.id})
+               Absinthe.run(@wallets_doc, Schema, variables: %{"user_id" => user.id})
 
       assert wallets_resp = data["wallets"]
 
@@ -52,7 +52,7 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
     end
   end
 
-  @wallet_by_currency """
+  @wallet_by_currency_doc """
     query WalletsByCurrency($user_id: ID!, $currency: String!) {
     walletByCurrency(user_id: $user_id, currency: $currency) {
       id
@@ -73,7 +73,7 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
       assert wallet = wallet_fixture(%{user_id: user.id, currency: currency})
 
       assert {:ok, %{data: data}} =
-               Absinthe.run(@wallet_by_currency, Schema,
+               Absinthe.run(@wallet_by_currency_doc, Schema,
                  variables: %{"user_id" => user.id, "currency" => currency}
                )
 

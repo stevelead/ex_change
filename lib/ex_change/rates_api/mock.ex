@@ -14,6 +14,9 @@ defmodule ExChange.RatesApi.Mock do
         {"NZD", "USD"} ->
           "0.65"
 
+        {"CAD", "USD"} ->
+          "0.95"
+
         _ ->
           generate_float_as_string()
       end
