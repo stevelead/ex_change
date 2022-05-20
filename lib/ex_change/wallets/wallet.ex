@@ -6,7 +6,7 @@ defmodule ExChange.Wallets.Wallet do
 
   schema "wallets" do
     field :currency, :string
-    field :value, :decimal, default: 0.0
+    field :value, :decimal
 
     belongs_to :user, User
 
@@ -17,6 +17,6 @@ defmodule ExChange.Wallets.Wallet do
   def changeset(wallet, attrs) do
     wallet
     |> cast(attrs, [:currency, :value, :user_id])
-    |> validate_required([:currency, :value])
+    |> validate_required([:currency])
   end
 end

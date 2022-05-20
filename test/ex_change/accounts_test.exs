@@ -15,6 +15,12 @@ defmodule ExChange.AccountsTest do
       assert Accounts.list_users() == [user]
     end
 
+    test "find_user/1 returns the user with given params" do
+      user = user_fixture()
+      assert {:ok, found_user} = Accounts.find_user(user_id: user.id)
+      assert found_user == user
+    end
+
     test "get_user!/1 returns the user with given id" do
       user = user_fixture()
       assert Accounts.get_user!(user.id) == user

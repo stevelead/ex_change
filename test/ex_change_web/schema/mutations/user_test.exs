@@ -25,7 +25,7 @@ defmodule ExChangeWeb.Schema.Mutations.UserTest do
       user_res = data["createUser"]
       assert user_res["email"] === user_params["email"]
 
-      assert {:ok, account} = ExChange.Accounts.get_user(%{email: user_params["email"]})
+      assert {:ok, account} = ExChange.Accounts.find_user(%{email: user_params["email"]})
       assert account.id === user_res["id"]
       assert account.email === user_res["email"]
       assert account.email === user_params["email"]

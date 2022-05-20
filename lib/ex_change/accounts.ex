@@ -25,13 +25,19 @@ defmodule ExChange.Accounts do
   @doc """
   Gets a single user.
 
+  Returns %{code: :not_found, ...} if the Wallet does not exist.
+
   ## Examples
 
-      iex> get_user(%{id: 123})
+      iex> find_user(%{id: 123})
       {:ok, %User{}}
 
+      iex> find_user(%{user_id: 111, currency: "HUH"})
+      {:error, %{code: :not_found, details: %{params: %{user_id: 123, currency: "HUH"}, query: Wallet}, message: "no records found"}}
+
+
   """
-  def get_user(params), do: Actions.find(User, params)
+  def find_user(params), do: Actions.find(User, params)
 
   @doc """
   Gets a single user.

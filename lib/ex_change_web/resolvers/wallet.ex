@@ -8,4 +8,8 @@ defmodule ExChangeWeb.Resolvers.Wallet do
   def find_wallet(_parent, params, _resolution) do
     Wallets.find_wallet(params)
   end
+
+  def create_wallet(_parent, params, _resolution) do
+    Wallets.create_wallet(params)
+  end
 end
