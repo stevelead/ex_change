@@ -247,7 +247,15 @@ defmodule ExChange.Wallets do
          rate <- get_exchange_rate(send_wallet, rec_cur, api_server),
          rec_amount <- Decimal.mult(rate, amount),
          {:ok, _} <- do_transaction(send_wallet, amount, rec_wallet, rec_amount) do
-      {:ok, %{sender_id: send_wallet.user_id, receiver_id: rec_wallet.user_id}}
+      {:ok,
+       %{
+         sender_id: send_wallet.user_id,
+         receiver_id: rec_wallet.user_id,
+         send_currency: send_cur,
+         send_amount: amount,
+         receive_currency: rec_cur,
+         received_amount: rec_amount
+       }}
     end
   end
 
