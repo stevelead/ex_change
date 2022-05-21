@@ -112,7 +112,7 @@ defmodule ExChange.RatesServerTest do
   end
 
   describe "RatesServer.get_exchange_rate/2" do
-    test "returns the current value from state", %{test: test} do
+    test "returns the current rate from state", %{test: test} do
       user = user_fixture()
 
       for currency <- ["NZD", "USD"] do

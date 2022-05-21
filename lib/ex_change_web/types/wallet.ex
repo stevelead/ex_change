@@ -3,11 +3,11 @@ defmodule ExChangeWeb.Types.Wallet do
   import Absinthe.Resolution.Helpers, only: [dataloader: 1]
   ExChangeWeb.Resolvers.Wallet
 
-  @desc "A wallet with an id, a currency, value and a user"
+  @desc "A wallet with an id, a currency, balance and a user"
   object :wallet do
     field :id, :integer
     field :currency, :string
-    field :value, :decimal
+    field :balance, :decimal
 
     field :user, :user, resolve: dataloader(ExChange.Accounts)
   end

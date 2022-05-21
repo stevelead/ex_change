@@ -10,14 +10,14 @@ defmodule ExChangeWeb.Schema.Mutations.WalletTest do
     createWallet(user_id: $user_id, currency: $currency) {
       id
       currency
-      value
+      balance
       user {
         id
         email
         wallets {
           id
           currency
-          value
+          balance
         }
       }
     }

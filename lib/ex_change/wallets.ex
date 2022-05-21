@@ -56,15 +56,15 @@ defmodule ExChange.Wallets do
 
   defp get_total_worth_value(wallets, currency, server) do
     Enum.reduce(wallets, Decimal.new(0), fn
-      %{currency: ^currency, value: value}, acc ->
-        value
+      %{currency: ^currency, balance: balance}, acc ->
+        balance
         |> Decimal.new()
         |> Decimal.add(acc)
 
       wallet, acc ->
         with rate <- get_exchange_rate(wallet, currency, server),
-             wallet_value <- Decimal.new(wallet.value),
-             multiplied_decimal <- Decimal.mult(rate, wallet_value) do
+             wallet_balance <- Decimal.new(wallet.balance),
+             multiplied_decimal <- Decimal.mult(rate, wallet_balance) do
           multiplied_decimal |> Decimal.add(acc) |> Decimal.to_string()
         end
     end)
@@ -216,9 +216,9 @@ defmodule ExChange.Wallets do
   @doc """
   Sends a payment from one wallet to another wallet
 
-  The payment wallet miust hold the same or greater amount of the send_currency and value.
+  The payment wallet must hold the same or greater amount of the send_currency and amount.
 
-  The value param must be a string is a valid param of Decimal.new/1 (i.e. "2.43" or "1")
+  The amount param must be a string and a valid param of Decimal.new/1 (i.e. "2.43" or "1")
 
   The receiving wallet must hold the receive_currency passed into the params.
 
@@ -279,7 +279,7 @@ defmodule ExChange.Wallets do
   end
 
   def check_send_balance(send_wallet, amount) do
-    if send_wallet.value === amount do
+    if send_wallet.balance === amount do
       :ok
     else
       {:error, :insufficient_send_wallet_balance}
@@ -287,10 +287,10 @@ defmodule ExChange.Wallets do
   end
 
   defp do_transaction(send_wallet, amount, rec_wallet, rec_amount) do
-    with new_send_value <- Decimal.sub(send_wallet.value, amount),
-         %Ecto.Changeset{} = send_cs <- change_wallet(send_wallet, %{value: new_send_value}),
-         new_rec_value <- Decimal.add(rec_wallet.value, rec_amount),
-         %Ecto.Changeset{} = rec_cs <- change_wallet(rec_wallet, %{value: new_rec_value}) do
+    with new_send_balance <- Decimal.sub(send_wallet.balance, amount),
+         %Ecto.Changeset{} = send_cs <- change_wallet(send_wallet, %{balance: new_send_balance}),
+         new_rec_balance <- Decimal.add(rec_wallet.balance, rec_amount),
+         %Ecto.Changeset{} = rec_cs <- change_wallet(rec_wallet, %{balance: new_rec_balance}) do
       Multi.new()
       |> Multi.update(:send_wallet, send_cs)
       |> Multi.update(:rec_wallet, rec_cs)

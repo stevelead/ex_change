@@ -20,7 +20,7 @@ defmodule ExChangeWeb.Schema.Subscriptions.ExchangeRatesTest do
   describe "@rateUpdated" do
     test "subscribe to rate updates", %{socket: socket, test: server_name} do
       for cur <- ["NZD", "USD"] do
-        _wallet = wallet_fixture(%{currency: cur, value: "1"})
+        _wallet = wallet_fixture(%{currency: cur, balance: "1"})
       end
 
       initial_rate = Decimal.new("0.55")

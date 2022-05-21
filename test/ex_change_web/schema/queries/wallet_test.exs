@@ -14,7 +14,7 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
     wallets(user_id: $user_id) {
       id
       currency
-      value
+      balance
       user {
         id
         email
@@ -61,7 +61,7 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
     walletByCurrency(user_id: $user_id, currency: $currency) {
       id
       currency
-      value
+      balance
       user {
         id
         email
@@ -105,8 +105,8 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
 
       wallet_currencies = [{"NZD", 10}, {"USD", 100}, {"CAD", 1000}]
 
-      for {currency, value} <- wallet_currencies do
-        wallet_fixture(%{user_id: user.id, currency: currency, value: value})
+      for {currency, balance} <- wallet_currencies do
+        wallet_fixture(%{user_id: user.id, currency: currency, balance: balance})
       end
 
       rates =

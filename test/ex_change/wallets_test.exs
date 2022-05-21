@@ -10,7 +10,7 @@ defmodule ExChange.WalletsTest do
     import ExChange.WalletsFixtures
     import ExChange.AccountsFixtures
 
-    @invalid_attrs %{currency: nil, value: nil}
+    @invalid_attrs %{currency: nil, balance: nil}
 
     test "list_wallets/0 returns all wallets" do
       wallet = wallet_fixture()
@@ -33,7 +33,7 @@ defmodule ExChange.WalletsTest do
       user = user_fixture()
 
       for currency <- ["NZD", "CAD"] do
-        wallet_fixture(user_id: user.id, currency: currency, value: 1)
+        wallet_fixture(user_id: user.id, currency: currency, balance: 1)
       end
 
       now = DateTime.utc_now()
@@ -70,11 +70,11 @@ defmodule ExChange.WalletsTest do
     end
 
     test "create_wallet/1 with valid data creates a wallet" do
-      valid_attrs = %{currency: "some currency", value: "120.5"}
+      valid_attrs = %{currency: "some currency", balance: "120.5"}
 
       assert {:ok, %Wallet{} = wallet} = Wallets.create_wallet(valid_attrs)
       assert wallet.currency == "some currency"
-      assert wallet.value == Decimal.new("120.5")
+      assert wallet.balance == Decimal.new("120.5")
     end
 
     test "create_wallet/1 with invalid data returns error changeset" do
@@ -83,11 +83,11 @@ defmodule ExChange.WalletsTest do
 
     test "update_wallet/2 with valid data updates the wallet" do
       wallet = wallet_fixture()
-      update_attrs = %{currency: "some updated currency", value: "456.7"}
+      update_attrs = %{currency: "some updated currency", balance: "456.7"}
 
       assert {:ok, %Wallet{} = wallet} = Wallets.update_wallet(wallet, update_attrs)
       assert wallet.currency == "some updated currency"
-      assert wallet.value == Decimal.new("456.7")
+      assert wallet.balance == Decimal.new("456.7")
     end
 
     test "update_wallet/2 with invalid data returns error changeset" do
@@ -152,12 +152,12 @@ defmodule ExChange.WalletsTest do
       assert send_user = user_fixture(%{email: "some@real.email"})
 
       assert send_wallet =
-               wallet_fixture(%{user_id: send_user.id, currency: "NZD", value: Decimal.new("5")})
+               wallet_fixture(%{user_id: send_user.id, currency: "NZD", balance: Decimal.new("5")})
 
       assert rec_user = user_fixture(%{email: "some@other.email"})
 
       assert rec_wallet =
-               wallet_fixture(%{user_id: rec_user.id, currency: "USD", value: Decimal.new(0)})
+               wallet_fixture(%{user_id: rec_user.id, currency: "USD", balance: Decimal.new(0)})
 
       send_value = Decimal.new("5")
 
@@ -177,38 +177,38 @@ defmodule ExChange.WalletsTest do
       assert {:ok, new_send_wallet} =
                Wallets.find_wallet(%{user_id: send_user.id, currency: send_wallet.currency})
 
-      assert new_send_wallet.value == Decimal.new(0)
+      assert new_send_wallet.balance == Decimal.new(0)
 
       assert {:ok, new_rec_wallet} =
                Wallets.find_wallet(%{user_id: rec_user.id, currency: rec_wallet.currency})
 
-      assert new_rec_wallet.value == Decimal.new("3.25")
+      assert new_rec_wallet.balance == Decimal.new("3.25")
     end
 
     test "send_payment/5 returns an error when insufficient balance" do
       assert send_user = user_fixture(%{email: "some@real.email"})
 
       sender_wallet_balace = Decimal.new("4")
-      incorrect_send_value = Decimal.new("5")
+      incorrect_send_amount = Decimal.new("5")
 
       assert send_wallet =
                wallet_fixture(%{
                  user_id: send_user.id,
                  currency: "NZD",
-                 value: sender_wallet_balace
+                 balance: sender_wallet_balace
                })
 
       assert rec_user = user_fixture(%{email: "some@other.email"})
 
       assert rec_wallet =
-               wallet_fixture(%{user_id: rec_user.id, currency: "USD", value: Decimal.new(0)})
+               wallet_fixture(%{user_id: rec_user.id, currency: "USD", balance: Decimal.new(0)})
 
       assert {:error, :insufficient_send_wallet_balance} =
                Wallets.send_payment(
                  send_user.id,
                  rec_user.id,
                  send_wallet.currency,
-                 incorrect_send_value,
+                 incorrect_send_amount,
                  rec_wallet.currency
                )
     end
@@ -223,22 +223,22 @@ defmodule ExChange.WalletsTest do
                wallet_fixture(%{
                  user_id: send_user.id,
                  currency: send_user_wallet_currency,
-                 value: Decimal.new("5")
+                 balance: Decimal.new("5")
                })
 
       assert rec_user = user_fixture(%{email: "some@other.email"})
 
       assert rec_wallet =
-               wallet_fixture(%{user_id: rec_user.id, currency: "USD", value: Decimal.new(0)})
+               wallet_fixture(%{user_id: rec_user.id, currency: "USD", balance: Decimal.new(0)})
 
-      send_value = Decimal.new("5")
+      send_amount = Decimal.new("5")
 
       assert {:error, "send wallet for AUS currency not found"} =
                Wallets.send_payment(
                  send_user.id,
                  rec_user.id,
                  incorrect_currency,
-                 send_value,
+                 send_amount,
                  rec_wallet.currency
                )
     end
@@ -247,7 +247,7 @@ defmodule ExChange.WalletsTest do
       assert send_user = user_fixture(%{email: "some@real.email"})
 
       assert send_wallet =
-               wallet_fixture(%{user_id: send_user.id, currency: "NZD", value: Decimal.new("5")})
+               wallet_fixture(%{user_id: send_user.id, currency: "NZD", balance: Decimal.new("5")})
 
       assert rec_user = user_fixture(%{email: "some@other.email"})
 
@@ -258,17 +258,17 @@ defmodule ExChange.WalletsTest do
                wallet_fixture(%{
                  user_id: rec_user.id,
                  currency: rec_user_wallet_currency,
-                 value: Decimal.new(0)
+                 balance: Decimal.new(0)
                })
 
-      send_value = Decimal.new("5")
+      send_amount = Decimal.new("5")
 
       assert {:error, "rec wallet for AUS currency not found"} =
                Wallets.send_payment(
                  send_user.id,
                  rec_user.id,
                  send_wallet.currency,
-                 send_value,
+                 send_amount,
                  incorrect_currency
                )
     end

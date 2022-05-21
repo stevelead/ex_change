@@ -14,7 +14,7 @@ defmodule ExChangeWeb.Schema.Queries.UserTest do
       wallets {
         id
         currency
-        value
+        balance
       }
     }
   }

@@ -37,12 +37,12 @@ defmodule ExChangeWeb.Schema.Subscriptions.WalletTest do
         end
 
       assert send_wallet =
-               wallet_fixture(%{user_id: send_user.id, currency: "NZD", value: Decimal.new("5")})
+               wallet_fixture(%{user_id: send_user.id, currency: "NZD", balance: Decimal.new("5")})
 
       assert rec_wallet =
-               wallet_fixture(%{user_id: rec_user.id, currency: "USD", value: Decimal.new(0)})
+               wallet_fixture(%{user_id: rec_user.id, currency: "USD", balance: Decimal.new(0)})
 
-      send_value = Decimal.new("5")
+      send_amount = Decimal.new("5")
 
       [send_ref, rec_ref] =
         for user <- [send_user, rec_user] do
@@ -63,7 +63,7 @@ defmodule ExChangeWeb.Schema.Subscriptions.WalletTest do
                  send_user_id,
                  rec_user_id,
                  send_wallet.currency,
-                 send_value,
+                 send_amount,
                  rec_wallet.currency,
                  server_name
                )

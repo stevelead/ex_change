@@ -12,7 +12,7 @@ defmodule ExChange.WalletsFixtures do
       attrs
       |> Enum.into(%{
         currency: "NZD",
-        value: "120.5"
+        balance: "120.5"
       })
       |> ExChange.Wallets.create_wallet()
 
