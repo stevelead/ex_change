@@ -18,7 +18,7 @@ defmodule ExChangeWeb.Schema.Subscriptions.WalletTest do
   """
 
   describe "@totalWorthChanged" do
-    test "sends a notification when a user sends or receives money", %{
+    test "subscribe to total worth changes", %{
       socket: socket,
       test: server_name
     } do
