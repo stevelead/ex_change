@@ -184,14 +184,6 @@ defmodule ExChange.WalletsTest do
     end
 
     test "send_payment/5 returns an error when insufficient balance", %{test: server_name} do
-      initial_state = %{
-        rates: %{"NZD:USD" => %{rate: Decimal.new("0.65"), last_updated: DateTime.utc_now()}},
-        rates_api_module: RatesApi.Mock
-      }
-
-      assert {:ok, _pid} =
-               start_supervised({RatesServer, [name: server_name, initial_state: initial_state]})
-
       assert send_user = user_fixture(%{email: "some@real.email"})
 
       assert send_wallet =
@@ -209,6 +201,30 @@ defmodule ExChange.WalletsTest do
                  send_user.id,
                  rec_user.id,
                  send_wallet.currency,
+                 send_value,
+                 rec_wallet.currency,
+                 server_name
+               )
+    end
+
+    test "send_payment/5 returns an error when incorrect send currency", %{test: server_name} do
+      assert send_user = user_fixture(%{email: "some@real.email"})
+
+      assert send_wallet =
+               wallet_fixture(%{user_id: send_user.id, currency: "NZD", value: Decimal.new("4")})
+
+      assert rec_user = user_fixture(%{email: "some@other.email"})
+
+      assert rec_wallet =
+               wallet_fixture(%{user_id: rec_user.id, currency: "USD", value: Decimal.new(0)})
+
+      send_value = Decimal.new("5")
+
+      assert {:error, "send wallet for AUS currency not found"} =
+               Wallets.send_payment(
+                 send_user.id,
+                 rec_user.id,
+                 "AUS",
                  send_value,
                  rec_wallet.currency,
                  server_name

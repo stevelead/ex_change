@@ -241,9 +241,9 @@ defmodule ExChange.Wallets do
         ) ::
           :ok | {:error, any()}
   def send_payment(send_id, rec_id, send_cur, amount, rec_cur, api_server \\ nil) do
-    with {:ok, send_wallet} <- get_wallet(send_id, send_cur),
+    with {:ok, send_wallet} <- get_wallet(send_id, send_cur, :send),
          :ok <- check_send_balance(send_wallet, amount),
-         {:ok, rec_wallet} <- get_wallet(rec_id, rec_cur),
+         {:ok, rec_wallet} <- get_wallet(rec_id, rec_cur, :rec),
          rate <- get_exchange_rate(send_wallet, rec_cur, api_server),
          rec_amount <- Decimal.mult(rate, amount),
          {:ok, _} <- do_transaction(send_wallet, amount, rec_wallet, rec_amount) do
@@ -251,8 +251,14 @@ defmodule ExChange.Wallets do
     end
   end
 
-  defp get_wallet(user_id, cur) do
-    find_wallet(%{user_id: user_id, currency: cur})
+  defp get_wallet(user_id, cur, type) do
+    case find_wallet(%{user_id: user_id, currency: cur}) do
+      {:ok, wallet} ->
+        {:ok, wallet}
+
+      {:error, %{code: :not_found}} ->
+        {:error, "#{type} wallet for #{cur} currency not found"}
+    end
   end
 
   def check_send_balance(send_wallet, amount) do
