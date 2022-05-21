@@ -226,7 +226,7 @@ defmodule ExChange.Wallets do
       iex> send_payment(1, 2, "NZD", 5, "USD")
       {:ok, %{sender_id: 1, receiver_id: 2}}
 
-      iex> send_payment(1, 2, "NZD", 5, "HUH")
+      iex> send_payment(1, 2, "HMM", 5, "HUH")
       {:error, ...}
 
   """
@@ -259,7 +259,7 @@ defmodule ExChange.Wallets do
     if send_wallet.value === amount do
       :ok
     else
-      :insufficient_send_wallet_balance
+      {:error, :insufficient_send_wallet_balance}
     end
   end
 
