@@ -36,8 +36,13 @@ defmodule ExChange.WalletsTest do
         wallet_fixture(user_id: user.id, currency: currency, value: 1)
       end
 
+      now = DateTime.utc_now()
+
       initial_state = %{
-        rates: %{"NZD:USD" => %{rate: "0.7"}, "CAD:USD" => %{rate: "0.9"}},
+        rates: %{
+          "NZD:USD" => %{rate: Decimal.new("0.7"), last_updated: now},
+          "CAD:USD" => %{rate: Decimal.new("0.9"), last_updated: now}
+        },
         rates_api_module: RatesApi.Mock
       }
 
@@ -53,6 +58,13 @@ defmodule ExChange.WalletsTest do
     test "get_wallet!/1 returns the wallet with given id" do
       wallet = wallet_fixture()
       assert Wallets.get_wallet!(wallet.id) == wallet
+    end
+
+    test "find_wallet/1 returns the wallet with given params" do
+      user = user_fixture()
+      currency = "NZD"
+      wallet = wallet_fixture(%{user_id: user.id, currency: currency})
+      assert {:ok, ^wallet} = Wallets.find_wallet(%{user_id: user.id, currency: currency})
     end
 
     test "create_wallet/1 with valid data creates a wallet" do
@@ -124,6 +136,51 @@ defmodule ExChange.WalletsTest do
       assert currency_count = Wallets.get_currency_count(wallets)
 
       assert [{"NZD", "USD"}, {"USD", "NZD"}] = Wallets.get_exchange_combinations(currency_count)
+    end
+
+    test "send_payment/5 makes a payment when valid params", %{test: server_name} do
+      initial_state = %{
+        rates: %{"NZD:USD" => %{rate: Decimal.new("0.65"), last_updated: DateTime.utc_now()}},
+        rates_api_module: RatesApi.Mock
+      }
+
+      assert {:ok, _pid} =
+               start_supervised({RatesServer, [name: server_name, initial_state: initial_state]})
+
+      assert send_user = user_fixture(%{email: "some@real.email"})
+
+      assert send_wallet =
+               wallet_fixture(%{user_id: send_user.id, currency: "NZD", value: Decimal.new("5")})
+
+      assert rec_user = user_fixture(%{email: "some@other.email"})
+
+      assert rec_wallet =
+               wallet_fixture(%{user_id: rec_user.id, currency: "USD", value: Decimal.new(0)})
+
+      send_value = Decimal.new("5")
+
+      assert {:ok, response} =
+               Wallets.send_payment(
+                 send_user.id,
+                 rec_user.id,
+                 send_wallet.currency,
+                 send_value,
+                 rec_wallet.currency,
+                 server_name
+               )
+
+      assert response.sender_id == send_user.id
+      assert response.receiver_id == rec_user.id
+
+      assert {:ok, new_send_wallet} =
+               Wallets.find_wallet(%{user_id: send_user.id, currency: send_wallet.currency})
+
+      assert new_send_wallet.value == Decimal.new(0)
+
+      assert {:ok, new_rec_wallet} =
+               Wallets.find_wallet(%{user_id: rec_user.id, currency: rec_wallet.currency})
+
+      assert new_rec_wallet.value == Decimal.new("3.25")
     end
   end
 end

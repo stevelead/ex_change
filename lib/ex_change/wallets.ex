@@ -5,6 +5,7 @@ defmodule ExChange.Wallets do
 
   import Ecto.Query, warn: false
   alias ExChange.Repo
+  alias Ecto.Multi
   alias EctoShorts.Actions
 
   alias ExChange.Wallets.Wallet
@@ -66,14 +67,6 @@ defmodule ExChange.Wallets do
           multiplied_decimal |> Decimal.add(acc) |> Decimal.to_string()
         end
     end)
-  end
-
-  defp get_exchange_rate(wallet, currency, nil) do
-    RatesServer.get_exchange_rate("#{wallet.currency}:#{currency}")
-  end
-
-  defp get_exchange_rate(wallet, currency, server) do
-    RatesServer.get_exchange_rate("#{wallet.currency}:#{currency}", server)
   end
 
   @doc """
@@ -217,5 +210,76 @@ defmodule ExChange.Wallets do
     for from <- held_currencies, to <- held_currencies, from !== to do
       {from, to}
     end
+  end
+
+  @doc """
+  Sends a payment from one wallet to another wallet
+
+  The payment wallet miust hold the same or greater amount of the send_currency and value.
+
+  The value param must be a string is a valid param of Decimal.new/1 (i.e. "2.43" or "1")
+
+  The receiving wallet must hold the receive_currency passed into the params.
+
+  ## Examples
+
+      iex> send_payment(1, 2, "NZD", 5, "USD")
+      {:ok, %{sender_id: 1, receiver_id: 2}}
+
+      iex> send_payment(1, 2, "NZD", 5, "HUH")
+      {:error, ...}
+
+  """
+
+  @spec send_payment(
+          Integer.t(),
+          Integer.t(),
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t() | pid()
+        ) ::
+          :ok | {:error, any()}
+  def send_payment(send_id, rec_id, send_cur, amount, rec_cur, api_server \\ nil) do
+    with {:ok, send_wallet} <- get_wallet(send_id, send_cur),
+         :ok <- check_send_balance(send_wallet, amount),
+         {:ok, rec_wallet} <- get_wallet(rec_id, rec_cur),
+         rate <- get_exchange_rate(send_wallet, rec_cur, api_server),
+         rec_amount <- Decimal.mult(rate, amount),
+         {:ok, _} <- do_transaction(send_wallet, amount, rec_wallet, rec_amount) do
+      {:ok, %{sender_id: send_wallet.user_id, receiver_id: rec_wallet.user_id}}
+    end
+  end
+
+  defp get_wallet(user_id, cur) do
+    find_wallet(%{user_id: user_id, currency: cur})
+  end
+
+  def check_send_balance(send_wallet, amount) do
+    if send_wallet.value === amount do
+      :ok
+    else
+      :insufficient_send_wallet_balance
+    end
+  end
+
+  defp do_transaction(send_wallet, amount, rec_wallet, rec_amount) do
+    with new_send_value <- Decimal.sub(send_wallet.value, amount),
+         %Ecto.Changeset{} = send_cs <- change_wallet(send_wallet, %{value: new_send_value}),
+         new_rec_value <- Decimal.add(rec_wallet.value, rec_amount),
+         %Ecto.Changeset{} = rec_cs <- change_wallet(rec_wallet, %{value: new_rec_value}) do
+      Multi.new()
+      |> Multi.update(:send_wallet, send_cs)
+      |> Multi.update(:rec_wallet, rec_cs)
+      |> Repo.transaction()
+    end
+  end
+
+  defp get_exchange_rate(wallet, currency, nil) do
+    RatesServer.get_exchange_rate("#{wallet.currency}:#{currency}")
+  end
+
+  defp get_exchange_rate(wallet, currency, server) do
+    RatesServer.get_exchange_rate("#{wallet.currency}:#{currency}", server)
   end
 end
