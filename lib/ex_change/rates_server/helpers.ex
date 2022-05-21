@@ -1,5 +1,6 @@
 defmodule ExChange.RatesServer.Helpers do
   alias ExChange.RatesApi.Rate
+  alias ExChangeWeb.Endpoint
 
   require Logger
 
@@ -28,9 +29,10 @@ defmodule ExChange.RatesServer.Helpers do
     end
   end
 
-  # rates not in acc below as %{"NZD:USD" => etc}
   defp put_most_recent(new_rate, current_rate, acc) do
-    get_most_recent(new_rate, current_rate)
+    new_rate
+    |> get_most_recent(current_rate)
+    |> publish_rate_update()
     |> put_new_rate(acc)
   end
 
@@ -38,6 +40,27 @@ defmodule ExChange.RatesServer.Helpers do
     case DateTime.compare(new_rate.last_update, current_rate.last_update) do
       :gt -> new_rate
       :lt -> current_rate
+    end
+  end
+
+  def publish_rate_update(rate) do
+    rate.code
+    |> get_currency()
+    |> do_publish(rate)
+  end
+
+  defp get_currency(code) do
+    code
+    |> String.split(":")
+    |> hd()
+  end
+
+  defp do_publish(currency, rate) do
+    with :ok <-
+           Absinthe.Subscription.publish(Endpoint, Map.put(rate, :currency, currency),
+             rate_updated: currency
+           ) do
+      rate
     end
   end
 

@@ -3,6 +3,7 @@ defmodule ExChangeWeb.Schema do
 
   import_types ExChangeWeb.Types.User
   import_types ExChangeWeb.Types.Wallet
+  import_types ExChangeWeb.Types.ExchangeRate
   import_types Absinthe.Type.Custom
 
   import_types ExChangeWeb.Schema.Queries.User
@@ -12,6 +13,7 @@ defmodule ExChangeWeb.Schema do
   import_types ExChangeWeb.Schema.Mutations.Wallet
 
   import_types ExChangeWeb.Schema.Subscriptions.Wallet
+  import_types ExChangeWeb.Schema.Subscriptions.ExchangeRate
 
   query do
     import_fields :user_queries
@@ -25,6 +27,7 @@ defmodule ExChangeWeb.Schema do
 
   subscription do
     import_fields :wallet_subscriptions
+    import_fields :exchange_rate_subscriptions
   end
 
   def context(ctx) do

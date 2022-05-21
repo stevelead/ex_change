@@ -40,8 +40,8 @@ defmodule ExChange.WalletsTest do
 
       initial_state = %{
         rates: %{
-          "NZD:USD" => %{rate: Decimal.new("0.7"), last_updated: now},
-          "CAD:USD" => %{rate: Decimal.new("0.9"), last_updated: now}
+          "NZD:USD" => %{rate: Decimal.new("0.7"), last_update: now},
+          "CAD:USD" => %{rate: Decimal.new("0.9"), last_update: now}
         },
         rates_api_module: RatesApi.Mock
       }
@@ -142,7 +142,7 @@ defmodule ExChange.WalletsTest do
 
     test "send_payment/5 makes a payment when valid params", %{test: server_name} do
       initial_state = %{
-        rates: %{"NZD:USD" => %{rate: Decimal.new("0.65"), last_updated: DateTime.utc_now()}},
+        rates: %{"NZD:USD" => %{rate: Decimal.new("0.65"), last_update: DateTime.utc_now()}},
         rates_api_module: RatesApi.Mock
       }
 

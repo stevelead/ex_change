@@ -3,6 +3,7 @@ defmodule ExChangeWeb.Schema.Subscriptions.WalletTest do
 
   alias ExChange.Wallets
   alias ExChange.RatesServer
+  alias ExChange.RatesApi
 
   import ExChange.AccountsFixtures
   import ExChange.WalletsFixtures
@@ -23,7 +24,7 @@ defmodule ExChangeWeb.Schema.Subscriptions.WalletTest do
       test: server_name
     } do
       initial_state = %{
-        rates: %{"NZD:USD" => %{rate: Decimal.new("0.65"), last_updated: DateTime.utc_now()}},
+        rates: %{"NZD:USD" => %{rate: Decimal.new("0.65"), last_update: DateTime.utc_now()}},
         rates_api_module: RatesApi.Mock
       }
 
