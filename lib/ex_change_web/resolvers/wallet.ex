@@ -14,6 +14,6 @@ defmodule ExChangeWeb.Resolvers.Wallet do
   end
 
   def get_users_total_worth(_parent, %{user_id: user_id, currency: currency}, _resolution) do
-    {:ok, Wallets.get_users_total_worth(user_id, currency)}
+    Wallets.get_users_total_worth(user_id, currency)
   end
 end

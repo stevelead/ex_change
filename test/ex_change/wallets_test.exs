@@ -49,7 +49,9 @@ defmodule ExChange.WalletsTest do
       assert {:ok, _pid} =
                start_supervised({RatesServer, [name: test, initial_state: initial_state]})
 
-      assert response = Wallets.get_users_total_worth(Integer.to_string(user.id), "USD", test)
+      assert {:ok, response} =
+               Wallets.get_users_total_worth(Integer.to_string(user.id), "USD", test)
+
       assert "1.6" == response.total_worth
       assert "USD" == response.currency
       assert user.id == response.user_id
@@ -169,8 +171,8 @@ defmodule ExChange.WalletsTest do
                  server_name
                )
 
-      assert response.sender_id == send_user.id
-      assert response.receiver_id == rec_user.id
+      assert response.sender_id == Integer.to_string(send_user.id)
+      assert response.receiver_id == Integer.to_string(rec_user.id)
 
       assert {:ok, new_send_wallet} =
                Wallets.find_wallet(%{user_id: send_user.id, currency: send_wallet.currency})
@@ -183,7 +185,7 @@ defmodule ExChange.WalletsTest do
       assert new_rec_wallet.value == Decimal.new("3.25")
     end
 
-    test "send_payment/5 returns an error when insufficient balance", %{test: server_name} do
+    test "send_payment/5 returns an error when insufficient balance" do
       assert send_user = user_fixture(%{email: "some@real.email"})
 
       sender_wallet_balace = Decimal.new("4")
@@ -207,12 +209,11 @@ defmodule ExChange.WalletsTest do
                  rec_user.id,
                  send_wallet.currency,
                  incorrect_send_value,
-                 rec_wallet.currency,
-                 server_name
+                 rec_wallet.currency
                )
     end
 
-    test "send_payment/5 returns an error when incorrect send currency", %{test: server_name} do
+    test "send_payment/5 returns an error when incorrect send currency" do
       assert send_user = user_fixture(%{email: "some@real.email"})
 
       send_user_wallet_currency = "NZD"
@@ -238,12 +239,11 @@ defmodule ExChange.WalletsTest do
                  rec_user.id,
                  incorrect_currency,
                  send_value,
-                 rec_wallet.currency,
-                 server_name
+                 rec_wallet.currency
                )
     end
 
-    test "send_payment/5 returns an error when incorrect receiver currency", %{test: server_name} do
+    test "send_payment/5 returns an error when incorrect receiver currency" do
       assert send_user = user_fixture(%{email: "some@real.email"})
 
       assert send_wallet =
@@ -269,8 +269,7 @@ defmodule ExChange.WalletsTest do
                  rec_user.id,
                  send_wallet.currency,
                  send_value,
-                 incorrect_currency,
-                 server_name
+                 incorrect_currency
                )
     end
   end

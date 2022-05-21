@@ -11,6 +11,8 @@ defmodule ExChangeWeb.Schema do
   import_types ExChangeWeb.Schema.Mutations.User
   import_types ExChangeWeb.Schema.Mutations.Wallet
 
+  import_types ExChangeWeb.Schema.Subscriptions.Wallet
+
   query do
     import_fields :user_queries
     import_fields :wallet_queries
@@ -19,6 +21,10 @@ defmodule ExChangeWeb.Schema do
   mutation do
     import_fields :user_mutations
     import_fields :wallet_mutations
+  end
+
+  subscription do
+    import_fields :wallet_subscriptions
   end
 
   def context(ctx) do

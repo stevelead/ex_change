@@ -6,6 +6,7 @@ defmodule ExChange.Wallets do
   import Ecto.Query, warn: false
   alias ExChange.Repo
   alias Ecto.Multi
+  alias ExChangeWeb.Endpoint
   alias EctoShorts.Actions
 
   alias ExChange.Wallets.Wallet
@@ -49,7 +50,7 @@ defmodule ExChange.Wallets do
   def get_users_total_worth(user_id, currency, server \\ nil) do
     with wallets when is_list(wallets) <- list_wallets_by_user_id(user_id),
          total_worth <- get_total_worth_value(wallets, currency, server) do
-      %{user_id: String.to_integer(user_id), currency: currency, total_worth: total_worth}
+      {:ok, %{user_id: String.to_integer(user_id), currency: currency, total_worth: total_worth}}
     end
   end
 
@@ -246,16 +247,24 @@ defmodule ExChange.Wallets do
          {:ok, rec_wallet} <- get_wallet(rec_id, rec_cur, :rec),
          rate <- get_exchange_rate(send_wallet, rec_cur, api_server),
          rec_amount <- Decimal.mult(rate, amount),
-         {:ok, _} <- do_transaction(send_wallet, amount, rec_wallet, rec_amount) do
-      {:ok,
-       %{
-         sender_id: send_wallet.user_id,
-         receiver_id: rec_wallet.user_id,
-         send_currency: send_cur,
-         send_amount: amount,
-         receive_currency: rec_cur,
-         received_amount: rec_amount
-       }}
+         {:ok, _} <- do_transaction(send_wallet, amount, rec_wallet, rec_amount),
+         details = %{
+           sender_id: "#{send_wallet.user_id}",
+           receiver_id: "#{rec_wallet.user_id}",
+           send_currency: send_cur,
+           send_amount: amount,
+           receive_currency: rec_cur,
+           received_amount: rec_amount,
+           api_server: api_server
+         },
+         :ok <-
+           Absinthe.Subscription.publish(Endpoint, details,
+             total_worth_changed: [
+               "total_worth_changed:" <> "#{send_id}",
+               "total_worth_changed:" <> "#{rec_id}"
+             ]
+           ) do
+      {:ok, details}
     end
   end
 

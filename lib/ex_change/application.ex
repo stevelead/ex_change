@@ -17,6 +17,7 @@ defmodule ExChange.Application do
       # Start the Endpoint (http/https)
       ExChangeWeb.Endpoint,
       # Start a worker by calling: ExChange.Worker.start_link(arg)
+      {Absinthe.Subscription, ExChangeWeb.Endpoint},
       {Registry, keys: :unique, name: ExChange.Registry},
       ExChange.RatesServer.Superviser
     ]

@@ -1,5 +1,6 @@
 defmodule ExChangeWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :ex_change
+  use Absinthe.Phoenix.Endpoint
 
   socket "/socket", ExChangeWeb.UserSocket,
     websocket: true,

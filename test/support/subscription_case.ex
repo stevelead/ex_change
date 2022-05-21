@@ -9,6 +9,7 @@ defmodule ExChangeWeb.SubscriptionCase do
         schema: ExChangeWeb.Schema
 
       alias ExChange.Repo
+      import ExChangeWeb.SubscriptionCase
 
       setup do
         {:ok, socket} = Phoenix.ChannelTest.connect(ExChangeWeb.UserSocket, %{})
