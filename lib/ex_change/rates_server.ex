@@ -53,9 +53,10 @@ defmodule ExChange.RatesServer do
   @impl true
   def handle_continue(:load_currencies, state) do
     with wallets when is_list(wallets) <- Wallets.list_wallets(),
-         currency_count <- Wallets.get_currency_count(wallets) do
+         new_currency_count <- Wallets.get_currency_count(wallets),
+         merged_currency_count <- Map.merge(state.currency_count, new_currency_count) do
       :timer.send_interval(state.tick_rate, self(), :tick)
-      {:noreply, %{state | currency_count: currency_count}}
+      {:noreply, %{state | currency_count: merged_currency_count}}
     end
   end
 
