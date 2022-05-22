@@ -298,6 +298,9 @@ defmodule ExChange.Wallets do
     end
   end
 
+  defp get_exchange_rate(wallet, currency, nil) when wallet.currency === currency,
+    do: Decimal.new(1)
+
   defp get_exchange_rate(wallet, currency, nil) do
     RatesServer.get_exchange_rate("#{wallet.currency}:#{currency}")
   end
