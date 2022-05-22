@@ -232,15 +232,6 @@ defmodule ExChange.Wallets do
 
   """
 
-  @spec send_payment(
-          Integer.t(),
-          Integer.t(),
-          String.t(),
-          String.t(),
-          String.t(),
-          String.t() | pid()
-        ) ::
-          :ok | {:error, any()}
   def send_payment(send_id, rec_id, send_cur, amount, rec_cur, api_server \\ nil) do
     with {:ok, send_wallet} <- get_wallet(send_id, send_cur, :send),
          :ok <- check_send_balance(send_wallet, amount),
