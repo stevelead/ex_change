@@ -145,11 +145,7 @@ defmodule ExChange.RatesServerTest do
         wallet_fixture(%{currency: currency, user_id: user.id})
       end
 
-      currency_count =
-        wallet_currency_count_fixture([%{currency: "NZD", count: 5}, %{currency: "USD", count: 5}])
-
       initial_state = %{
-        currency_count: currency_count,
         rates_api_module: RatesApi.Mock,
         tick_rate: 100
       }
@@ -164,18 +160,43 @@ defmodule ExChange.RatesServerTest do
       Process.sleep(150)
 
       assert state = RatesServer.get_state(test)
-      assert 0.65 = get_float_rate(state.rates, "NZD:USD")
-      assert state.rates |> get_rate("USD:NZD") |> Decimal.is_decimal()
+      assert Decimal.new("0.65") == get_rate_param(state.rates, "NZD:USD", :rate)
+      assert state.rates |> get_rate_param("USD:NZD", :rate) |> Decimal.is_decimal()
+    end
+
+    test "does not set a new rate if a more recent rate exists", %{test: test} do
+      user = user_fixture()
+
+      for currency <- ["NZD", "USD"] do
+        wallet_fixture(%{currency: currency, user_id: user.id})
+      end
+
+      rate = Decimal.new(1)
+      time_updated = DateTime.utc_now() |> DateTime.add(1, :second)
+      initial_rates = %{"NZD:USD" => %{rate: rate, time_updated: time_updated}}
+
+      initial_state = %{
+        rates: initial_rates,
+        rates_api_module: RatesApi.Mock,
+        tick_rate: 100
+      }
+
+      opts = [
+        name: test,
+        initial_state: initial_state
+      ]
+
+      assert {:ok, pid} = start_supervised({RatesServer, opts})
+
+      Process.send(pid, :tick, [])
+
+      assert state = RatesServer.get_state(test)
+      assert rate == get_rate_param(state.rates, "NZD:USD", :rate)
+      assert time_updated == get_rate_param(state.rates, "NZD:USD", :time_updated)
     end
   end
 
-  defp get_float_rate(rates, code) do
-    rates
-    |> get_rate(code)
-    |> Decimal.to_float()
-  end
-
-  defp get_rate(rates, code) do
-    rates |> Map.get(code) |> Map.get(:rate)
+  defp get_rate_param(rates, code, param) do
+    rates |> Map.get(code) |> Map.get(param)
   end
 end

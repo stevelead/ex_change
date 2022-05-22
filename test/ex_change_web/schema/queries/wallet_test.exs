@@ -111,8 +111,7 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
 
       rates =
         [{"NZD:USD", "0.65"}, {"CAD:USD", "0.95"}]
-        |> Enum.map(fn {code, rate} -> Rate.new(code, rate) end)
-        |> Enum.reduce(%{}, &RatesServer.Helpers.update_rates/2)
+        |> into_rates_map()
 
       initial_state = %{rates: rates, rates_api_module: RatesApi}
 
@@ -132,5 +131,11 @@ defmodule ExChangeWeb.Schema.Queries.WalletTest do
 
   defp get_first_user_id(resp) do
     resp |> List.first() |> get_in(["user", "id"])
+  end
+
+  defp into_rates_map(rates_list) do
+    rates_list
+    |> Enum.map(fn {code, rate} -> Rate.new(code, rate) end)
+    |> Enum.reduce(%{}, &RatesServer.Helpers.update_rates/2)
   end
 end

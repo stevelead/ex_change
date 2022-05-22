@@ -26,7 +26,7 @@ defmodule ExChangeWeb.Schema.Subscriptions.ExchangeRatesTest do
       initial_rate = Decimal.new("0.55")
 
       initial_state = %{
-        rates: %{"NZD:USD" => %{rate: initial_rate, last_update: DateTime.utc_now()}},
+        rates: %{"NZD:USD" => %{rate: initial_rate, time_updated: DateTime.utc_now()}},
         rates_api_module: RatesApi.Mock
       }
 

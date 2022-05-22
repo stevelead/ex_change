@@ -25,21 +25,24 @@ defmodule ExChange.RatesServer.Helpers do
     if current = Map.get(acc, rate.code) do
       put_most_recent(rate, current, acc)
     else
-      put_new_rate(rate, acc)
+      maybe_put_new_rate(rate, acc)
     end
   end
 
   defp put_most_recent(new_rate, current_rate, acc) do
     new_rate
     |> get_most_recent(current_rate)
-    |> publish_rate_update()
-    |> put_new_rate(acc)
+    |> maybe_put_new_rate(acc)
   end
 
   defp get_most_recent(new_rate, current_rate) do
-    case DateTime.compare(new_rate.last_update, current_rate.last_update) do
-      :gt -> new_rate
-      :lt -> current_rate
+    case DateTime.compare(new_rate.time_updated, current_rate.time_updated) do
+      :gt ->
+        new_rate
+        |> publish_rate_update()
+
+      :lt ->
+        :not_updated
     end
   end
 
@@ -64,7 +67,9 @@ defmodule ExChange.RatesServer.Helpers do
     end
   end
 
-  def put_new_rate(new_rate, rates) do
+  def maybe_put_new_rate(:not_updated, rates), do: rates
+
+  def maybe_put_new_rate(new_rate, rates) do
     {code, rest} = Map.pop!(new_rate, :code)
     Map.put(rates, code, rest)
   end
